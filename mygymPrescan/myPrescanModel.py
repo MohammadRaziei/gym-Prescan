@@ -1,7 +1,6 @@
 import matlab.engine
 
 
-
 ExperimentName = ''
 bdroot = ''
 prescanFile = ''
@@ -51,8 +50,7 @@ class sim:
 
     @staticmethod
     def Restart():
-        eng.set_param(bdroot, 'SimulationCommand', 'stop', nargout=0)
-        eng.set_param(bdroot, 'SimulationCommand', 'start', nargout=0)
+        eng.eval("set_param(bdroot, 'SimulationCommand', 'stop');set_param(bdroot, 'SimulationCommand', 'start');",nargout=0)
 
     @staticmethod
     def Status():

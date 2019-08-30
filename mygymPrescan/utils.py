@@ -83,3 +83,6 @@ class Transmitter_UDP:
 
     def close(self):
         self.this_socket.close()
+
+def error(*args):
+    print('Error: ',*args)

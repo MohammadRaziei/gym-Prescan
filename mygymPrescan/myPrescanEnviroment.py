@@ -1,7 +1,7 @@
 from myPrescanModel import *
 from utils import *
 
-from time import sleep
+
 
 
 class Discrete:

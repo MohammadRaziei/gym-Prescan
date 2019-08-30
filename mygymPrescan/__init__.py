@@ -22,6 +22,7 @@ class Env:
         # self.brake_flag_UDP = Transmitter_UDP(brake_flag_port)  # 8075)
         self.enviroment = enviroment
         self.action_space = Discrete(3)
+        self.__close__window__ = False
 
     def create(self, car_name=None, road_name=None):
         self.enviroment.create_model(car_name, road_name)
@@ -52,13 +53,15 @@ class Env:
     def __del__(self):
         self.close()
 
+
     def close(self):
         try:
             sim.Stop()
         except:
             pass
         self.enviroment.close()
-        sim.Close_window()
+        if self.__close__window__:
+            sim.Close_window()
 
         # print('Env-------close')
 

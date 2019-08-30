@@ -1,16 +1,17 @@
-import myPrescanGYM as gym
+import mygymPrescan as gym
 from datetime import datetime
 
 
 
 def main():
     env = gym.make('PreScan_Vissim_Python_0')
+    env.__close__window__ = True
     # gym.sim.Restart()
 
     env.reset()
     print('done')
     for j in range(2):
-        for i in range(100):
+        for i in range(10):
             env.render()
             s = env.object['data']
             env.enviroment.send((0,15))
@@ -19,12 +20,14 @@ def main():
         env.reset()
         print('+++++++++++++++++++++++++++++++++++++++++++++++++++++')
 
-    for i in range(100):
+    for i in range(10):
         env.render()
         s = env.object['data']
         env.enviroment.send((0,15))
         print('_________\n3.{} - Time : {}'.format(i+1,env.time))
         print(s)
+
+    # gym.sim.Stop()
     env.close()
 
 
