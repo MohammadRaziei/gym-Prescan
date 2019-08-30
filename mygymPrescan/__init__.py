@@ -5,7 +5,9 @@ Created on Sat May 18 15:47:01 2019
 @author: MohammadRaziei
 """
 
-from myPrescanEnviroment import *
+from mygymPrescan.PrescanEnviroment import *
+
+
 
 class Env:
     delay = 0.05  # s
@@ -79,7 +81,7 @@ class Env:
     @staticmethod
     def __get_state__():
         state = []
-        for i in Vehicle.__shared_flags__['objects']:
+        for i in Vehicle.objects:
             data = i.data.get()
             x = data["Position"]["x"]
             v = data["Velocity"]["x"]
@@ -133,6 +135,20 @@ def make(experimant_name):
     sim.Restart()
 
     return env
+
+
+
+
+
+
+
+
+__all__ = ['Env','sim','Model']
+
+
+
+
+
 
     # def get_position_road(self,road = None):
     #     __road__ = road if road is not None else self.road

@@ -28,6 +28,7 @@ def main():
         print(s)
 
     # gym.sim.Stop()
+    print(gym.Model.objects)
     env.close()
 
 

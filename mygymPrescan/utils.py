@@ -1,7 +1,6 @@
 
 import socket
 import struct, json
-import random
 
 
 import os, numpy as np
