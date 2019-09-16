@@ -46,7 +46,7 @@ class PrescanEnv(gym.Env):
         self.delay = delay #s
         
         self.__action__ = [0, 0]
-        print('Enviroment created')
+        print('Enviroment is created')
 
 
 
@@ -124,7 +124,7 @@ class PrescanEnv(gym.Env):
                 continue
             obs[0,t] = r
 
-        np.append(obs,[car['data']["Velocity"],car['data']["Position"]["x"], car['data']["Position"]["y"]])
+        np.append(obs, [car['data']["Velocity"], car['data']["Position"]["x"], car['data']["Position"]["y"]])
         return obs
         
 

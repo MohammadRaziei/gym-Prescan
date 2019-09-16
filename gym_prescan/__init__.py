@@ -21,3 +21,9 @@ register(
 
 
 
+time_step = 0.08
+def time_range(t_end,steps=time_step):
+    return range(int(t_end/steps))
+def time_at(t,steps=time_step):
+    return int(t/steps)
+    

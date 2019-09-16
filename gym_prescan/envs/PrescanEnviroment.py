@@ -16,12 +16,7 @@ class Discrete:
     def __repr__(self):
         return "Discrete(%d)" % self.n
 
-time_step = 0.005
-def time_range(t_end,steps=time_step):
-    return range(int(t_end/steps))
-def time_at(t,steps=time_step):
-    return int(t/steps)
-    
+
 class Enviroment:
     def __init__(self,outport=None, inport=None):
         self.outport = outport
