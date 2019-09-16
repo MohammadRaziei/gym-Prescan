@@ -15,35 +15,39 @@ import numpy as np
 
 
     
-def Prescan_make(experimant_name):
+# def Prescan_make(experimant_name):
 
-    set_experimant(experimant_name)
-    enviroment = Enviroment(outport=8031,inport=8070)
-    enviroment.create_model('Toyota_Yaris_Hatchback_1','StraightRoad_22')
-    env = PrescanEnv(enviroment)
-    sim.Restart()
+#     set_experimant(experimant_name)
+#     enviroment = Enviroment(outport=8031,inport=8070)
+#     enviroment.create_model('Toyota_Yaris_Hatchback_1','StraightRoad_22')
+#     env = PrescanEnv(enviroment)
+#     sim.Restart()
 
-    return env
+#     return env
 
 
 
-class PrescanEnv:
-    delay = 0.05  # s
-    def make(self,experimant_name='PreScan_Vissim_Python_0',sim_reset=True):
+class PrescanEnv(gym.Env):
+    def make(self,experimant_name,sim_reset=True):
         set_experimant(experimant_name)
         self.enviroment = Enviroment(outport=8031,inport=8070)
         self.enviroment.create_model('Toyota_Yaris_Hatchback_1','StraightRoad_22')
         if sim_reset:
             sim.Restart()
 
-    def __init__(self, experimant_name,sim_reset=True,close_window=False):
+    def __init__(self, experimant_name='PreScan_Vissim_Python_0',sim_reset=True,close_window=False,delay=0.05):
         # super(StockTradingEnv, self).__init__()
-        super().__init__() 
         self.make(experimant_name)
+        super().__init__() 
         self.action_space = spaces.Discrete(6)
         
         self.observation_space = spaces.Box(low=0, high=255, shape= (1, 40), dtype=np.float16)
         self.__close__window__ = close_window
+        self.delay = delay #s
+        
+        self.__action__ = [0, 0]
+        print('Enviroment created')
+
 
 
 
@@ -64,8 +68,8 @@ class PrescanEnv:
 
     def step(self, action):
         self.send(action)
-        if PrescanEnv.delay > 0 :
-            sleep(PrescanEnv.delay)
+        if self.delay > 0 :
+            sleep(self.delay)
         self.render()
 
         observation = self._next_observation()
@@ -107,19 +111,18 @@ class PrescanEnv:
 
     def _next_observation(self):
         self.render_()
-        obs = np.zeros((1,36),dtype=np.float)
-        theta = self.agent['Sensors']['data']['theta']
-        Range = self.agent['Sensors']['data']['Range']
+        obs = np.zeros((1,40),dtype=np.float)
+        theta = self.agent['Sensors'][0]['data']['theta']
+        Range = self.agent['Sensors'][0]['data']['Range']
         car = self.agent
 
         for i in range(len(theta)):
-            t = int((theta[i] + 18 )/10)
-            # print(t)
+            t = int((theta[i] + 180 )/10)
             r = Range[i]
-            if obs[1,t] != 0:
-                obs[1,t] > r
+            if obs[0,t] != 0:
+                obs[0,t] > r
                 continue
-            obs[1,t] = r
+            obs[0,t] = r
 
         np.append(obs,[car['data']["Velocity"],car['data']["Position"]["x"], car['data']["Position"]["y"]])
         return obs
@@ -131,6 +134,7 @@ class PrescanEnv:
         lanewidth = self.enviroment.road.laneWidth
         # vel = self.__action__[1]
         vel = self.agent['data']['Velocity']
+        offset = self.__action__[0]
         if action == 0 :
             offset = -1
         if action == 1 :

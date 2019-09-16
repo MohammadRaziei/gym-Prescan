@@ -21,7 +21,7 @@ def getDefaultFilename():
 
 def objectsFindByName(name):
     global ExperimentName
-    eng.eval(ExperimentName + "_models = prescan.experiment.readDataModels('" + ExperimentName + ".pd');", nargout=0)
+    eng.eval(ExperimentName + "_models = prescan.experiment.readDataModels('" + ExperimentName + ".pb');", nargout=0)
     return int(
         eng.eval("prescan.worldmodel.objectsFindByName(" + ExperimentName + "_models.worldmodel, '" + name + "')"))
 
