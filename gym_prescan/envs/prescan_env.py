@@ -35,7 +35,7 @@ class PrescanEnv(gym.Env):
         if sim_reset:
             sim.Restart()
 
-    def __init__(self, experimant_name='PreScan_Vissim_Python_0',sim_reset=True,close_window=False,delay=0.05):
+    def __init__(self, experimant_name='PreScan_Vissim_Python_0',sim_reset=True,close_window=False,delay=0.05,verbose=False):
         # super(StockTradingEnv, self).__init__()
         self.make(experimant_name)
         super().__init__() 
@@ -44,7 +44,8 @@ class PrescanEnv(gym.Env):
         self.observation_space = spaces.Box(low=0, high=255, shape= (1, 40), dtype=np.float16)
         self.__close__window__ = close_window
         self.delay = delay #s
-        
+        self.verbose = verbose
+
         self.__action__ = [0, 0]
         print('Enviroment is created')
 
@@ -62,11 +63,15 @@ class PrescanEnv(gym.Env):
             observation (object): the initial observation.
         """
         # sim.Restart()
+        if self.verbose:
+            print("env.reset")
         self.enviroment.reset()
         start_state = self._next_observation()
         return start_state
 
     def step(self, action):
+        if self.verbose:
+            print("env.step")
         self.send(action)
         if self.delay > 0 :
             sleep(self.delay)
@@ -90,6 +95,8 @@ class PrescanEnv(gym.Env):
         return data
     
     def render(self):
+        if self.verbose:
+            print("env.render")
         self.render_()
 
     def calc_reward(self):
