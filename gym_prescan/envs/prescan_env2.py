@@ -9,41 +9,29 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 
-from gym_prescan.envs.PrescanEnviroment import *
+from gym_prescan.envs.PrescanEnviroment2 import *
 
 from time import sleep
 import numpy as np
 
 
-    
-# def Prescan_make(experimant_name):
-
-#     set_experimant(experimant_name)
-#     enviroment = Enviroment(outport=8031,inport=8070)
-#     enviroment.create_model('Toyota_Yaris_Hatchback_1','StraightRoad_22')
-#     env = PrescanEnv(enviroment)
-#     sim.Restart()
-
-#     return env
 
 
-
-class PrescanEnv(gym.Env):
-    def make(self,experimant_name,sim_reset=True):
+class PrescanEnv2(gym.Env):
+    def make(self,experimant_name,host='localhost'):
         set_experimant(experimant_name)
-        self.enviroment = Enviroment(outport=8031,inport=8070)
+        self.enviroment = Enviroment(outport=8031,inport=8070,host=host)
         self.enviroment.create_model('Toyota_Yaris_Hatchback_1','StraightRoad_22')
-        if sim_reset:
-            sim.Restart()
+
 
     def __init__(self, 
                     experimant_name='PreScan_Vissim_Python_0',
-                    sim_reset=True,
+                    host = 'localhost',
                     close_window=False,
                     delay=0.05,
                     verbose=False):
         # super(StockTradingEnv, self).__init__()
-        self.make(experimant_name,sim_reset)
+        self.make(experimant_name,host=host)
         super().__init__() 
         self.action_space = spaces.Discrete(6)
         
@@ -68,7 +56,6 @@ class PrescanEnv(gym.Env):
         Returns:
             observation (object): the initial observation.
         """
-        # sim.Restart()
         if self.verbose:
             print("env.reset")
         self.enviroment.reset()
@@ -77,7 +64,7 @@ class PrescanEnv(gym.Env):
 
     def step(self, action):
         if self.verbose:
-            print("env.step")
+            print("env.step({})".format(action))
         self.send(action)
         if self.delay > 0 :
             sleep(self.delay)
@@ -102,7 +89,7 @@ class PrescanEnv(gym.Env):
     
     def render(self):
         if self.verbose:
-            print("env.render")
+            print("env.render()")
         self.render_()
 
     def calc_reward(self):
@@ -135,7 +122,6 @@ class PrescanEnv(gym.Env):
                 obs[0,t] > r
                 continue
             obs[0,t] = r
-
         extra = [car['data']["Velocity"], car['data']["Position"]["x"], car['data']["Position"]["y"]]
         return np.append(obs, extra)
         
@@ -155,9 +141,9 @@ class PrescanEnv(gym.Env):
             offset = 1
         offset *= lanewidth
         if action == 3 :
-            vel += 0.5
+            vel += 5
         if action == 4 :
-            vel -= 0.5
+            vel -= 5
 
         return [offset,vel]
     
@@ -172,7 +158,7 @@ class PrescanEnv(gym.Env):
             pass
         self.enviroment.close()
         if self.__close__window__:
-            sim.Close_window()
+            os.system('TASKKILL /F /IM VisViewerApp.exe 2> NUL')
 
   
 def reward_velocity(x,a,normal=True):

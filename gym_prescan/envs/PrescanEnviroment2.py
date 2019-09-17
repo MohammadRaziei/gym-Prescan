@@ -1,17 +1,20 @@
-from gym_prescan.envs.PrescanModel import *
+from gym_prescan.envs.PrescanModel2 import *
 
 
 
 
 class Enviroment:
-    def __init__(self,outport=None, inport=None):
+    def __init__(self,outport=None, inport=None,host='localhost'):
         self.outport = outport
         self.out = Reciver_UDP_json(outport)
         self.out.build()
 
         self.inport = inport
-        self.inp = Transmitter_UDP(inport,fmt='ddd')
-
+        self.inp = Transmitter_UDP(inport,fmt='ddd',host=host)
+        # off_set_port, desired_velocity_port,reset_port = inport
+        # self.off_set_UDP = Transmitter_UDP(off_set_port)  # 8072)
+        # self.desired_velocity_UDP = Transmitter_UDP(desired_velocity_port)  # 8073)
+        # self.reset_UDP = Transmitter_UDP(reset_port,fmt='?')  # 8075)
 
     def __del__(self):
         self.close()
@@ -67,6 +70,4 @@ class Enviroment:
         self.car = Vehicle(car_name, self.road)
         self.road.create()
         self.car.create()
-
-        # print('_____________env______________')
 

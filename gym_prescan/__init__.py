@@ -16,7 +16,13 @@ register(
     # tags={'wrapper_config.TimeLimit.max_episode_steps': 200},
     # reward_threshold=25.0,
 )
-
+register(
+    id='prescan-without-matlabengine-v0',
+    entry_point='gym_prescan.envs:PrescanEnv2',
+    # kwargs={'rows' : 3},
+    # tags={'wrapper_config.TimeLimit.max_episode_steps': 200},
+    # reward_threshold=25.0,
+)
 # __all__ = ['PrescanEnv','sim','Model']
 
 
