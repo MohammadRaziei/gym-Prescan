@@ -47,7 +47,7 @@ class PrescanEnv(gym.Env):
         super().__init__() 
         self.action_space = spaces.Discrete(6)
         
-        self.observation_space = spaces.Box(low=0, high=255, shape= (1, 40), dtype=np.float16)
+        self.observation_space = spaces.Box(low=0, high=255, shape= (1, 39), dtype=np.float16)
         self.__close__window__ = close_window
         self.delay = delay #s
         self.verbose = verbose
@@ -159,7 +159,9 @@ class PrescanEnv(gym.Env):
         if action == 4 :
             vel -= 0.5
 
-        return [offset,vel]
+        self.__action__ = [offset,vel]
+        print(self.__action__)
+        return self.__action__
     
     def __del__(self):
         self.close()

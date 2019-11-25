@@ -1,4 +1,3 @@
-import matlab.engine
 from gym_prescan.envs.utils import *
 
 ExperimentName = ''

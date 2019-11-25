@@ -1,4 +1,0 @@
-LIBRARY Jan22_DLforACC_cs_sfun.mexw64
-EXPORTS
-mexFunction
-mexfilerequiredapiversion

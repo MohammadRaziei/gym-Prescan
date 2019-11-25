@@ -1,4 +1,0 @@
-LIBRARY Feb13_DLforMLACC_cs_sfun.mexw64
-EXPORTS
-mexFunction
-mexfilerequiredapiversion

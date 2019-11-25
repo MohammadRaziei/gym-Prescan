@@ -1,4 +1,5 @@
 from gym_prescan.envs.PrescanModel2 import *
+from time import sleep,time
 
 
 
@@ -11,10 +12,7 @@ class Enviroment:
 
         self.inport = inport
         self.inp = Transmitter_UDP(inport,fmt='ddd',host=host)
-        # off_set_port, desired_velocity_port,reset_port = inport
-        # self.off_set_UDP = Transmitter_UDP(off_set_port)  # 8072)
-        # self.desired_velocity_UDP = Transmitter_UDP(desired_velocity_port)  # 8073)
-        # self.reset_UDP = Transmitter_UDP(reset_port,fmt='?')  # 8075)
+        self.done=False
 
     def __del__(self):
         self.close()
@@ -22,9 +20,7 @@ class Enviroment:
     def close(self):
         self.out.close()
         self.inp.close()
-        # self.off_set_UDP.close()
-        # self.desired_velocity_UDP.close()
-        # self.reset_UDP.close()
+
         for model in Model.objects:
             model.close()
         try:
@@ -34,15 +30,27 @@ class Enviroment:
         # print('Enviroment-------close')
 
     def reset(self):
-        # self.reset_UDP.send(True)
-        # self.reset_UDP.send(False)
-        # self.send((0,0))
         self.send_vec([0,0,1])
-
-        while True:
-            self.get()
-            if not self.done:
-                break
+    
+        # while True:
+        #     self.get()
+        #     if not bool(self.data['done']):
+        #         break
+        ### self.done = False
+        flag = True
+        while flag:
+            t = time()
+            while True: 
+                self.get()
+                if not bool(self.data['done']):
+                    flag = False
+                    break
+                if time() - t > 3:
+                    print('Retrying to reset environment!')
+                    break
+            self.send_vec([0,0,0])
+            self.send_vec([0,0,1])
+        self.send_vec([0,0,0])
         self.send_vec([0,0,0])
         return 
 
@@ -61,7 +69,9 @@ class Enviroment:
         self.data = self.out.get()
         self.agent = self.data['Vehicles'][self.data['Object']]
         self.collision = self.data['Collision']
-        # self.collision['Occurred'] = bool(self.collision['Occurred'])
+        self.collision['Occurred'] = bool(self.collision['Occurred'])
+        # if self.data['done'] :
+        #     self.done = True 
         self.done = bool(self.data['done'])
         return self.data
 
@@ -70,4 +80,7 @@ class Enviroment:
         self.car = Vehicle(car_name, self.road)
         self.road.create()
         self.car.create()
+    
+    def close_window(self):
+        os.system('TASKKILL /F /IM VisViewerApp.exe 2> NUL')
 

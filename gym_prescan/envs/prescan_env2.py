@@ -11,9 +11,8 @@ from gym.utils import seeding
 
 from gym_prescan.envs.PrescanEnviroment2 import *
 
-from time import sleep
 import numpy as np
-
+from pandas import Series
 
 
 
@@ -28,19 +27,26 @@ class PrescanEnv2(gym.Env):
                     experimant_name='PreScan_Vissim_Python_0',
                     host = 'localhost',
                     close_window=False,
-                    delay=0.05,
+                    delay=0.0,
+                    nget=1,
                     verbose=False):
         # super(StockTradingEnv, self).__init__()
         self.make(experimant_name,host=host)
         super().__init__() 
+
         self.action_space = spaces.Discrete(6)
-        
-        self.observation_space = spaces.Box(low=0, high=255, shape= (1, 40), dtype=np.float16)
+        self.observation_space = spaces.Box(low=0, high=255, shape= (1, 38), dtype=np.float16)
+       
         self.__close__window__ = close_window
         self.delay = delay #s
+        self.nget = nget
         self.verbose = verbose
         
         self.__action__ = [0, 0]
+        self.__rewards__ = []
+        self.__reset__ = 0
+        self.__step__ = 0
+        self.__sep__ = 25
         print('Enviroment is created')
 
 
@@ -56,24 +62,48 @@ class PrescanEnv2(gym.Env):
         Returns:
             observation (object): the initial observation.
         """
+        self.__rewards__ = []
+        self.__reset__ += 1
+        self.__step__ = 0
         if self.verbose:
-            print("env.reset")
+            print("[{}]>> env.reset()".format(self.__reset__))
+            print('='*self.__sep__)
+        self.__action__ = [0, 0]
         self.enviroment.reset()
         start_state = self._next_observation()
         return start_state
 
     def step(self, action):
-        if self.verbose:
-            print("env.step({})".format(action))
+        self.__step__ += 1
+        # if self.verbose:
+            # print("[{}]>>[{}]: env.step({})".format(self.__reset__,self.__step__,action))
         self.send(action)
         if self.delay > 0 :
             sleep(self.delay)
-        self.render()
+        for _ in range(self.nget):
+            self.render_()
+            if self.done:
+                break
 
         observation = self._next_observation()
         reward = self.calc_reward()
         done = self.done
-        info = {}
+        info = {'Collision':self.collision ,'Position':self.agent['data']['Position']}
+
+        self.__rewards__.append(reward)
+        if self.verbose:
+            print("[{}]>>[{}]: env.step({})".format(self.__reset__,self.__step__,action))
+            print('action:{}'.format(self.__action__))
+            print('reward:{1}\nobservation:\n{0}\ndone:{2}'.format(observation,reward,done))
+            if done:
+                print(self.collision)
+                print(self.agent['data']['Position'])
+                print('.'*self.__sep__)
+                print('** Rewards description :')
+                print(Series(self.__rewards__).describe())
+                print('#'*self.__sep__)
+            else:
+                print('-'*self.__sep__)
         return observation, reward, done, info
 
 
@@ -82,7 +112,7 @@ class PrescanEnv2(gym.Env):
         data = self.enviroment.get()
         self.agent = self.enviroment.agent
         self.collision = self.enviroment.collision
-        self.time = self.enviroment.data['Time']
+        self.Time = self.enviroment.data['Time']
         # self.done = bool(self.enviroment.data['done'])
         self.done = self.enviroment.done
         return data
@@ -93,12 +123,18 @@ class PrescanEnv2(gym.Env):
         self.render_()
 
     def calc_reward(self):
-        Vel = self.agent['data']['Velocity']
-        Longitudinal_reward = reward_velocity(Vel,20)
-        Lateral_reward = -0.5  if self.__action__[0] != 0 else 0
-        Collision_reward = -10 if self.collision['Occurred'] else 0
-        
-        reward_T = Longitudinal_reward + Lateral_reward + Collision_reward
+        lanewidth = self.enviroment.road.laneWidth
+        vel_sim = self.agent['data']['Velocity']
+        vel_cmd = self.__action__[1]
+        Vel = 0.8 * vel_sim + 0.2 * vel_cmd
+
+        Longitudinal_reward = reward_velocity(Vel,28) *1.5
+        # Lateral_reward = -0.5  if self.__action__[0] != 0 else 0
+        Collision_reward = -25 if self.collision['Occurred'] else 0
+        Violation_reward = -0.75 * (np.abs(self.__action__[0] - self.__action_old__[0])/lanewidth)
+        Nearby_reward = nearby_reward_linear(self.__obs__[13],-2.5,1.5) +\
+                        nearby_reward_linear(self.__obs__[23],-2.5,1.5)
+        reward_T = Longitudinal_reward + Collision_reward + Violation_reward + Nearby_reward
         return reward_T
 
     def seed(self):
@@ -111,9 +147,9 @@ class PrescanEnv2(gym.Env):
     def _next_observation(self):
         self.render_()
         obs = np.zeros((1,36),dtype=np.float)
-        theta = self.agent['Sensors'][0]['data']['theta']
-        Range = self.agent['Sensors'][0]['data']['Range']
         car = self.agent
+        theta = car['Sensors'][0]['data']['theta']
+        Range = car['Sensors'][0]['data']['Range']
 
         for i in range(len(theta)):
             t = int((theta[i] + 180 )/10)
@@ -122,31 +158,33 @@ class PrescanEnv2(gym.Env):
                 obs[0,t] > r
                 continue
             obs[0,t] = r
-        extra = [car['data']["Velocity"], car['data']["Position"]["x"], car['data']["Position"]["y"]]
-        return np.append(obs, extra)
+        extra = [car['data']["Velocity"], car['data']["Position"]["y"]]
+        self.__obs__ = np.append(obs, extra)
+        return self.__obs__ 
         
 
     def action_translate(self,action):
-        # Get the data points for the last 5 days and scale to between 0-1
-        # Append additional data and scale each value to between 0-1
         lanewidth = self.enviroment.road.laneWidth
-        # vel = self.__action__[1]
+        self.__action_old__ = self.__action__
         vel = self.agent['data']['Velocity']
         offset = self.__action__[0]
+
+
         if action == 0 :
-            offset = -1
+            offset = -lanewidth
         if action == 1 :
             offset = 0 
         if action == 2 :
-            offset = 1
-        offset *= lanewidth
+            offset = lanewidth
         if action == 3 :
-            vel += 5
+            vel = action_velocity(vel,True)
         if action == 4 :
-            vel -= 5
+            vel = action_velocity(vel,False)
 
-        return [offset,vel]
-    
+        self.__action__ = [offset,vel]
+
+        return self.__action__
+
     def __del__(self):
         self.close()
 
@@ -158,7 +196,7 @@ class PrescanEnv2(gym.Env):
             pass
         self.enviroment.close()
         if self.__close__window__:
-            os.system('TASKKILL /F /IM VisViewerApp.exe 2> NUL')
+            self.enviroment.close_window()
 
   
 def reward_velocity(x,a,normal=True):
@@ -173,5 +211,15 @@ def reward_velocity(x,a,normal=True):
     if normal:
         return 4 * R / a
     return R
+
+def action_velocity(vel,increase):
+    if increase:
+        return vel+5
+    else:
+        if vel < 5:
+            return vel/2
+        else:
+            return vel - 2
         
-    
+def nearby_reward_linear(x,R,W):
+    return -R/W * x + R if (x > 0 and x < W) else 0
