@@ -1,19 +1,18 @@
 import matlab.engine
 from gym_prescan.envs.utils import *
 
-globals()['eng'] = matlab.engine.connect_matlab()
 
 ExperimentName = ''
 bdroot = ''
 prescanFile = ''
+
+globals()['eng'] = matlab.engine.connect_matlab()
 
 def set_experimant(ExpName):
     global ExperimentName, bdroot, prescanFile
     ExperimentName = ExpName
     bdroot = ExperimentName + "_cs"
     prescanFile = ExperimentName + ".pb"
-    print(ExperimentName)
-
 
 
 def getDefaultFilename():

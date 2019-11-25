@@ -10,7 +10,6 @@ from gym import error, spaces, utils
 from gym.utils import seeding
 
 from gym_prescan.envs.PrescanEnviroment import *
-
 from time import sleep
 import numpy as np
 
@@ -36,22 +35,17 @@ class PrescanEnv(gym.Env):
         if sim_reset:
             sim.Restart()
 
-    def __init__(self, 
-                    experimant_name='PreScan_Vissim_Python_0',
-                    sim_reset=True,
-                    close_window=False,
-                    delay=0.05,
-                    verbose=False):
+    def __init__(self, experimant_name='PreScan_Vissim_Python_0',sim_reset=True,close_window=False,delay=0.05,verbose=False):
         # super(StockTradingEnv, self).__init__()
-        self.make(experimant_name,sim_reset)
+        self.make(experimant_name)
         super().__init__() 
         self.action_space = spaces.Discrete(6)
         
-        self.observation_space = spaces.Box(low=0, high=255, shape= (1, 39), dtype=np.float16)
+        self.observation_space = spaces.Box(low=0, high=255, shape= (1, 40), dtype=np.float16)
         self.__close__window__ = close_window
         self.delay = delay #s
         self.verbose = verbose
-        
+
         self.__action__ = [0, 0]
         print('Enviroment is created')
 
@@ -109,6 +103,7 @@ class PrescanEnv(gym.Env):
         Vel = self.agent['data']['Velocity']
         Longitudinal_reward = reward_velocity(Vel,20)
         Lateral_reward = -0.5  if self.__action__[0] != 0 else 0
+        print(self.collision)
         Collision_reward = -10 if self.collision['Occurred'] else 0
         
         reward_T = Longitudinal_reward + Lateral_reward + Collision_reward
@@ -123,7 +118,7 @@ class PrescanEnv(gym.Env):
 
     def _next_observation(self):
         self.render_()
-        obs = np.zeros((1,36),dtype=np.float)
+        obs = np.zeros((1,40),dtype=np.float)
         theta = self.agent['Sensors'][0]['data']['theta']
         Range = self.agent['Sensors'][0]['data']['Range']
         car = self.agent
@@ -136,8 +131,8 @@ class PrescanEnv(gym.Env):
                 continue
             obs[0,t] = r
 
-        extra = [car['data']["Velocity"], car['data']["Position"]["x"], car['data']["Position"]["y"]]
-        return np.append(obs, extra)
+        np.append(obs, [car['data']["Velocity"], car['data']["Position"]["x"], car['data']["Position"]["y"]])
+        return obs
         
 
     def action_translate(self,action):
@@ -159,9 +154,7 @@ class PrescanEnv(gym.Env):
         if action == 4 :
             vel -= 0.5
 
-        self.__action__ = [offset,vel]
-        print(self.__action__)
-        return self.__action__
+        return [offset,vel]
     
     def __del__(self):
         self.close()

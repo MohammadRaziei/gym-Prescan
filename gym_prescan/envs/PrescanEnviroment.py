@@ -3,6 +3,20 @@ from gym_prescan.envs.PrescanModel import *
 
 
 
+class Discrete:
+    r"""A discrete space in :math:`\{ 0, 1, \\dots, n-1 \}`.
+    Example::
+        >>> Discrete(2)
+    """
+
+    def __init__(self, n):
+        assert n >= 0
+        self.n = n
+
+    def __repr__(self):
+        return "Discrete(%d)" % self.n
+
+
 class Enviroment:
     def __init__(self,outport=None, inport=None):
         self.outport = outport
@@ -12,6 +26,10 @@ class Enviroment:
         self.inport = inport
         self.inp = Transmitter_UDP(inport,fmt='ddd')
 
+        # off_set_port, desired_velocity_port,reset_port = inport
+        # self.off_set_UDP = Transmitter_UDP(off_set_port)  # 8072)
+        # self.desired_velocity_UDP = Transmitter_UDP(desired_velocity_port)  # 8073)
+        # self.reset_UDP = Transmitter_UDP(reset_port,fmt='?')  # 8075)
 
     def __del__(self):
         self.close()
@@ -67,6 +85,5 @@ class Enviroment:
         self.car = Vehicle(car_name, self.road)
         self.road.create()
         self.car.create()
-
         # print('_____________env______________')
 
