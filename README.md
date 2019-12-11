@@ -53,6 +53,6 @@ env.close()
 
 ![](README/python-layers-env-alg.png)
 ![](README/block-diagram-white.jpg)
-![Python layers](README/python-layers-white.png)
+<!--![Python layers](README/python-layers-white.png)-->
 
 
