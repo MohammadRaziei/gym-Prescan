@@ -11,7 +11,7 @@ Developed by [@MohammadRaziei](https://github.com/MohammadRaziei/)
 * **[test](https://github.com/MohammadRaziei/gym-Prescan/tree/master/tests)** : There's some RL-algorithms using __stable-baseline__
 
 ### Standard test:
-```
+```python
 import gym, gym_prescan
 
 env_dict = {
