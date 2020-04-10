@@ -40,9 +40,9 @@ env.close()
 > * 'host' can be ignored if you have local run ('host' takes 'localhost' as default.)
 > * if 'verbose' took True as value, logs are allowed to be printed in terminal.
   
-
+<!--
 ### Read more:
-[ ![pdf][pdf] Download my BSc thesis in persian](README/AUTthesis-by-@MohammadRaziei.pdf)
+[ ![pdf][pdf] Download my BSc thesis in persian](README/AUTthesis-by-@MohammadRaziei.pdf) -->
 
 [pdf]: README/pdf-small.png
 
